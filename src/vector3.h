@@ -7,7 +7,6 @@
 using namespace gear2d;
 using std::sqrt;
 
-
 class vector3 {
   private:
     float x;
