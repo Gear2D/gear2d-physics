@@ -51,4 +51,4 @@ class collider : public component::base {
 };
 
 // the build function
-extern "C" { component::base * build() { return new collider(); } }
+g2dcomponent(collider)
