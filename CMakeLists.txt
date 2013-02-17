@@ -1,7 +1,7 @@
-project(helloperson-component)
+project(gear2d-physics)
 cmake_minimum_required(VERSION 2.6)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 # uses the FindGear2D.cmake to search for Gear2D
 find_package(Gear2D REQUIRED)
