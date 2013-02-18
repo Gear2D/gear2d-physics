@@ -108,7 +108,7 @@ class vector3 {
       z_ += dz;
     }
     
-    // assignment operators
+    // arithmetic assignment operators
     
     vector3& operator=(float scalar) {
       has_set = true;
@@ -117,16 +117,6 @@ class vector3 {
       z_ = scalar;
       return *this;
     }
-    
-    vector3& operator+=(float scalar) {
-      has_set = true;
-      x_ += scalar;
-      y_ += scalar;
-      z_ += scalar;
-      return *this;
-    }
-    
-    // arithmetic assignment operators
     
     vector3& operator+=(const vector3& other) {
       has_set = true;
@@ -160,14 +150,6 @@ class vector3 {
       x_ /= scalar;
       y_ /= scalar;
       z_ /= scalar;
-      return *this;
-    }
-    
-    vector3& operator*=(const vector3& other) {
-      has_set = true;
-      x_ *= scalar;
-      y_ *= scalar;
-      z_ *= scalar;
       return *this;
     }
     
@@ -208,16 +190,16 @@ class vector3 {
       return v;
     }
     
-    float operator*(const vector3& other) const {
-      return x_*other.x_ + y_*other.y_ + z_*other.z_;
-    }
-    
     vector3 operator-() const {
       vector3 v;
       v.x_ = -x_;
       v.y_ = -y_;
       v.z_ = -z_;
       return v;
+    }
+    
+    float operator*(const vector3& other) const {
+      return x_*other.x_ + y_*other.y_ + z_*other.z_;
     }
     
     // logical operators
