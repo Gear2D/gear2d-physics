@@ -51,5 +51,4 @@ class collider : public component::base {
 };
 
 // the build function
-
 g2dcomponent(collider)
