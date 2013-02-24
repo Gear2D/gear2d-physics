@@ -1,0 +1,13 @@
+compath:
+  components,/usr/local/lib/gear2d/component
+
+objpath: objects/
+
+imgpath: images/
+
+renderer:
+  w: 800
+  h: 600
+
+objects:
+  bg

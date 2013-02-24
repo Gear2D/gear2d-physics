@@ -1,0 +1,34 @@
+attach: renderer/renderer
+
+renderer:
+  surfaces:
+    bg=bg.png
+
+collider:
+  shapes: sky grass sun
+  sky:
+    type: rect
+    x: 0
+    y: 0
+    w: 800
+    h: 440
+
+    # set by collision component
+    collision: 
+      value: *bolas
+      shape: ship
+
+
+  grass:
+    type: rect
+    x: 0
+    y: 440
+    w: 800
+    h: 160
+  sun:
+    type: circle
+    x: 100
+    y: 10
+    r: 50
+
+    
