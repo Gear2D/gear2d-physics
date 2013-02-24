@@ -78,32 +78,32 @@ class vector3 {
     
     // setters
     
-    void setX(float x) {
+    void setx(float x) {
       has_set = true;
       x_ = x;
     }
     
-    void setY(float y) {
+    void sety(float y) {
       has_set = true;
       y_ = y;
     }
     
-    void setZ(float z) {
+    void setz(float z) {
       has_set = true;
       z_ = z;
     }
     
-    void addX(float dx) {
+    void addx(float dx) {
       has_set = true;
       x_ += dx;
     }
     
-    void addY(float dy) {
+    void addy(float dy) {
       has_set = true;
       y_ += dy;
     }
     
-    void addZ(float dz) {
+    void addz(float dz) {
       has_set = true;
       z_ += dz;
     }
@@ -150,6 +150,13 @@ class vector3 {
       x_ /= scalar;
       y_ /= scalar;
       z_ /= scalar;
+      return *this;
+    }
+    
+    vector3& setopposite() {
+      x_ = -x_;
+      y_ = -y_;
+      z_ = -z_;
       return *this;
     }
     
@@ -247,15 +254,20 @@ class vector3 {
     }
     
     // my projection over the other vector
-    vector3 proj(vector3 other) const {
+    vector3 proj(vector3& other) const {
       if (!other.length())
         throw divisionbyzero();
       
-      return other*(((*this)*other)/(other.length_*other.length_));
+      vector3 v;
+      float scalar = ((*this)*other)/(other.length_*other.length_);
+      x_ = other.x_*scalar;
+      y_ = other.y_*scalar;
+      z_ = other.z_*scalar;
+      return v;
     }
     
     // my projection over the other vector [assignment]
-    vector3& setproj(vector3 other) {
+    vector3& setproj(vector3& other) {
       if (!other.length())
         throw divisionbyzero();
       
@@ -267,13 +279,27 @@ class vector3 {
     }
     
     // my rejection over the other vector
-    vector3 rej(vector3 other) const {
-      return proj(other) - (*this);
+    vector3 rej(vector3& other) const {
+      if (!other.length())
+        throw divisionbyzero();
+      
+      vector3 v;
+      float scalar = ((*this)*other)/(other.length_*other.length_);
+      v.x_ = x_ - other.x_*scalar;
+      v.y_ = y_ - other.y_*scalar;
+      v.z_ = z_ - other.z_*scalar;
+      return v;
     }
     
     // my rejection over the other vector [assignment]
-    vector3& setrej(vector3 other) {
-      (*this) = rej(other);
+    vector3& setrej(vector3& other) {
+      if (!other.length())
+        throw divisionbyzero();
+      
+      float scalar = ((*this)*other)/(other.length_*other.length_);
+      x_ -= other.x_*scalar;
+      y_ -= other.y_*scalar;
+      z_ -= other.z_*scalar;
       return *this;
     }
     
@@ -285,7 +311,60 @@ class vector3 {
       return (x_*other.x_ + y_*other.y_ + z_*other.z_)/other.length_;
     }
     
-    // TODO: cross and rotate
+    // this cross other
+    vector3 cross(const vector3& other) const {
+      vector3 v;
+      v.x_ = y_*other.z_ - z_*other.y_;
+      v.y_ = z_*other.x_ - x_*other.z_;
+      v.z_ = x_*other.y_ - y_*other.x_;
+      return v;
+    }
+    
+    // this cross other [assignment]
+    vector3& setcross(const vector3& other) {
+      vector3 v;
+      v.x_ = y_*other.z_ - z_*other.y_;
+      v.y_ = z_*other.x_ - x_*other.z_;
+      v.z_ = x_*other.y_ - y_*other.x_;
+      x_ = v.x_;
+      y_ = v.y_;
+      z_ = v.z_;
+      return *this;
+    }
+    
+    // other cross this
+    vector3 oppositecross(const vector3& other) const {
+      vector3 v;
+      v.x_ = z_*other.y_ - y_*other.z_;
+      v.y_ = x_*other.z_ - z_*other.x_;
+      v.z_ = y_*other.x_ - x_*other.y_;
+      return v;
+    }
+    
+    // other cross this [assignment]
+    vector3& setoppositecross(const vector3& other) {
+      vector3 v;
+      v.x_ = z_*other.y_ - y_*other.z_;
+      v.y_ = x_*other.z_ - z_*other.x_;
+      v.z_ = y_*other.x_ - x_*other.y_;
+      x_ = v.x_;
+      y_ = v.y_;
+      z_ = v.z_;
+      return *this;
+    }
+    
+    // rotates this around other by angle degrees
+    vector3 rotate(float angle, const vector3& other) const {
+      vector3 v;
+      // TODO
+      return v;
+    }
+    
+    // rotates this around other by angle degrees [assignment]
+    vector3& setrotate(float angle, const vector3& other) {
+      // TODO
+      return *this;
+    }
 };
 
 #endif
