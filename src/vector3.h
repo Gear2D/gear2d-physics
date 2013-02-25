@@ -155,9 +155,6 @@ class vector3 {
       v.z_ = -z_;
       return v;
     }
-    float dot(const vector3& other) const {
-      return x_*other.x_ + y_*other.y_ + z_*other.z_;
-    }
     
     // logical operators
     bool operator==(const vector3& other) const {
@@ -177,6 +174,11 @@ class vector3 {
     }
     bool operator<=(vector3& other) {
       return (length() <= other.length());
+    }
+    
+    // this dot other
+    float dot(const vector3& other) const {
+      return x_*other.x_ + y_*other.y_ + z_*other.z_;
     }
     
     // angle in degrees between this and other
