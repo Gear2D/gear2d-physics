@@ -1,10 +1,13 @@
 
-#ifndef VECTOR3_H
-#define VECTOR3_H
+#ifndef VECTOR3_HPP
+#define VECTOR3_HPP
 
 #include <cmath>
+#include <iostream>
 #include "gear2d.h"
 
+#undef  rad2deg
+#undef  deg2rad
 #define rad2deg(X)  (X*180/M_PI)
 #define deg2rad(X)  (X*M_PI/180)
 
@@ -22,7 +25,7 @@ class vector3 {
     bool has_set;
     
   public:
-    vector3(float x = 0, float y = 0, float x = 0)
+    vector3(float x = 0, float y = 0, float z = 0)
     : x_(x), y_(y), z_(z), has_set(true)
     {
     }
@@ -163,17 +166,25 @@ class vector3 {
     bool operator!=(const vector3& other) const {
       return (x_ != other.x_ || y_ != other.y_ || z_ != other.z_);
     }
-    bool operator>(vector3& other) {
-      return (length() > other.length());
+    bool operator>(const vector3& other_) const {
+      vector3 me(*this);
+      vector3 other(other_);
+      return (me.length() > other.length());
     }
-    bool operator<(vector3& other) {
-      return (length() < other.length());
+    bool operator<(const vector3& other_) const {
+      vector3 me(*this);
+      vector3 other(other_);
+      return (me.length() < other.length());
     }
-    bool operator>=(vector3& other) {
-      return (length() >= other.length());
+    bool operator>=(const vector3& other_) const {
+      vector3 me(*this);
+      vector3 other(other_);
+      return (me.length() >= other.length());
     }
-    bool operator<=(vector3& other) {
-      return (length() <= other.length());
+    bool operator<=(const vector3& other_) const {
+      vector3 me(*this);
+      vector3 other(other_);
+      return (me.length() <= other.length());
     }
     
     // this dot other
@@ -182,22 +193,25 @@ class vector3 {
     }
     
     // angle in degrees between this and other
-    float angle(vector3& other) {
-      if (!length() || !other.length())
+    float angle(const vector3& other_) const {
+      vector3 me(*this);
+      vector3 other(other_);
+      if (!me.length() || !other.length())
         throw divisionbyzero();
       
-      return rad2deg(std::acos(dot(other)/(length_*other.length_)));
+      return rad2deg(std::acos(dot(other)/(me.length_*other.length_)));
     }
     
     // this unit vector
-    vector3 unitvec() {
-      if (!length())
+    vector3 unitvec() const {
+      vector3 me(*this);
+      if (!me.length())
         throw divisionbyzero();
       
       vector3 v;
-      v.x_ = x_/length_;
-      v.y_ = y_/length_;
-      v.z_ = z_/length_;
+      v.x_ = x_/me.length_;
+      v.y_ = y_/me.length_;
+      v.z_ = z_/me.length_;
       return v;
     }
     void setunitvec() {
@@ -210,18 +224,20 @@ class vector3 {
     }
     
     // this projection over other
-    vector3 proj(vector3& other) const {
+    vector3 proj(const vector3& other_) const {
+      vector3 other(other_);
       if (!other.length())
         throw divisionbyzero();
       
       vector3 v;
       float scalar = dot(other)/(other.length_*other.length_);
-      x_ = other.x_*scalar;
-      y_ = other.y_*scalar;
-      z_ = other.z_*scalar;
+      v.x_ = other.x_*scalar;
+      v.y_ = other.y_*scalar;
+      v.z_ = other.z_*scalar;
       return v;
     }
-    void setproj(vector3& other) {
+    void setproj(const vector3& other_) {
+      vector3 other(other_);
       if (!other.length())
         throw divisionbyzero();
       
@@ -232,7 +248,8 @@ class vector3 {
     }
     
     // this rejection over other
-    vector3 rej(vector3& other) const {
+    vector3 rej(const vector3& other_) const {
+      vector3 other(other_);
       if (!other.length())
         throw divisionbyzero();
       
@@ -243,7 +260,8 @@ class vector3 {
       v.z_ = z_ - other.z_*scalar;
       return v;
     }
-    void setrej(vector3& other) {
+    void setrej(const vector3& other_) {
+      vector3 other(other_);
       if (!other.length())
         throw divisionbyzero();
       
@@ -254,7 +272,8 @@ class vector3 {
     }
     
     // this scalar projection over other
-    float scalarproj(vector3& other) const {
+    float scalarproj(const vector3& other_) const {
+      vector3 other(other_);
       if (!other.length())
         throw divisionbyzero();
       
@@ -298,7 +317,7 @@ class vector3 {
     }
     
     // rotates this around other by angle degrees
-    vector3 rotate(float angle, vector3& other) const {
+    vector3 rotate(float angle, const vector3& other) const {
       vector3 v;
       vector3 u = other.unitvec();
       float sint = std::sin(deg2rad(angle));
@@ -308,7 +327,7 @@ class vector3 {
       v.z_ = x_*(u.x_*u.z_*(1 - cost) - u.y_*sint)  +  y_*(u.y_*u.z_*(1 - cost) + u.x_*sint)  +  z_*(u.z_*u.z_*(1 - cost) +      cost);
       return v;
     }
-    void setrotate(float angle, vector3& other) {
+    void setrotate(float angle, const vector3& other) {
       vector3 v;
       vector3 u = other.unitvec();
       float sint = sin(deg2rad(angle));
@@ -319,6 +338,12 @@ class vector3 {
       x_ = v.x_;
       y_ = v.y_;
       z_ = v.z_;
+    }
+    
+    // shows the vector values
+    void show() {
+      std::cout << "vector3 at " << this << ": x = " << x_ << ", y = " << y_;
+      std::cout << ", z = " << z_ << ", length = " << length() << std::endl;
     }
     
     // gear2d component communication
