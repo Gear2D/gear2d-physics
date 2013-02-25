@@ -9,10 +9,11 @@
 
 using namespace gear2d;
 using std::sqrt;
+using std::sin;
+using std::cos;
 
 class vector3 {
   public:
-    
     class divisionbyzero {};
     
   private:
@@ -354,15 +355,29 @@ class vector3 {
     }
     
     // rotates this around other by angle degrees
-    vector3 rotate(float angle, const vector3& other) const {
+    vector3 rotate(float angle, vector3& other) const {
       vector3 v;
-      // TODO
+      vector3 u = other.unitvec();
+      float sint = sin(deg2rad(angle));
+      float cost = cos(deg2rad(angle));
+      v.x_ = x_*(u.x_*u.x_*(1 - cost) +      cost)  +  y_*(u.x_*u.y_*(1 - cost) - u.z_*sint)  +  z_*(u.x_*u.z_*(1 - cost) + u.y_*sint);
+      v.y_ = x_*(u.x_*u.y_*(1 - cost) + u.z_*sint)  +  y_*(u.y_*u.y_*(1 - cost) +      cost)  +  z_*(u.y_*u.z_*(1 - cost) - u.x_*sint);
+      v.z_ = x_*(u.x_*u.z_*(1 - cost) - u.y_*sint)  +  y_*(u.y_*u.z_*(1 - cost) + u.x_*sint)  +  z_*(u.z_*u.z_*(1 - cost) +      cost);
       return v;
     }
     
     // rotates this around other by angle degrees [assignment]
-    vector3& setrotate(float angle, const vector3& other) {
-      // TODO
+    vector3& setrotate(float angle, vector3& other) {
+      vector3 v;
+      vector3 u = other.unitvec();
+      float sint = sin(deg2rad(angle));
+      float cost = cos(deg2rad(angle));
+      v.x_ = x_*(u.x_*u.x_*(1 - cost) +      cost)  +  y_*(u.x_*u.y_*(1 - cost) - u.z_*sint)  +  z_*(u.x_*u.z_*(1 - cost) + u.y_*sint);
+      v.y_ = x_*(u.x_*u.y_*(1 - cost) + u.z_*sint)  +  y_*(u.y_*u.y_*(1 - cost) +      cost)  +  z_*(u.y_*u.z_*(1 - cost) - u.x_*sint);
+      v.z_ = x_*(u.x_*u.z_*(1 - cost) - u.y_*sint)  +  y_*(u.y_*u.z_*(1 - cost) + u.x_*sint)  +  z_*(u.z_*u.z_*(1 - cost) +      cost);
+      x_ = v.x_;
+      y_ = v.y_;
+      z_ = v.z_;
       return *this;
     }
 };
