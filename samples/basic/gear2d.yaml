@@ -1,5 +1,5 @@
 compath:
-  components,/usr/local/lib/gear2d/component
+  components,/usr/local/lib/gear2d/component,C:\\Program Filesd\\gear2d\\lib\\gear2d\\component
 
 objpath: objects/
 
