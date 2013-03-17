@@ -13,3 +13,5 @@ message(STATUS ${CMAKE_INSTALL_PREFIX})
 # they are calculated by FindGear2D.cmake
 include_directories(${Gear2D_INCLUDE_DIR} ${SDL_INCLUDE_DIR})
 link_directories(${Gear2D_LINK_DIR})
+
+add_subdirectory(src)

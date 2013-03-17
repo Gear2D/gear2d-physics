@@ -1,6 +1,6 @@
 
-#ifndef VECTOR3_HPP
-#define VECTOR3_HPP
+#ifndef VECTOR3_H
+#define VECTOR3_H
 
 #include <cmath>
 #include <iostream>
@@ -11,11 +11,38 @@
 #define rad2deg(X)  (X*180/M_PI)
 #define deg2rad(X)  (X*M_PI/180)
 
-using namespace gear2d;
+namespace gear2d {
+  class evildivision : public evil {
+    public:
+      evildivision(const std::string what) throw() :
+      evil("Division by zero inside \"" + what + "\"") {}
+  };
+}
 
 class vector3 {
   public:
-    class divisionbyzero {};
+    // gear2d component communication
+    void write(gear2d::component::base & com, const std::string & prefix = "") const {
+      std::string my_prefix = prefix;
+      if (prefix.size())
+        my_prefix += ".";
+      com.write<float>(my_prefix + "x", x_);
+      com.write<float>(my_prefix + "y", y_);
+      com.write<float>(my_prefix + "z", z_);
+    }
+    void read(gear2d::component::base & com, const std::string & prefix = "") {
+      std::string my_prefix = prefix;
+      if (prefix.size())
+        my_prefix += ".";
+      com.read<float>(my_prefix + "x", x_);
+      com.read<float>(my_prefix + "y", y_);
+      com.read<float>(my_prefix + "z", z_);
+    }
+    static vector3 from(gear2d::component::base & com, const std::string & prefix = "") {
+      vector3 v;
+      v.read(com, prefix);
+      return v;
+    }
     
   private:
     float x_;
@@ -105,7 +132,7 @@ class vector3 {
     }
     vector3& operator/=(float scalar) {
       if (!scalar)
-        throw divisionbyzero();
+        throw gear2d::evildivision("vector3& vector3::operator/=(float scalar)");
       
       has_set = true;
       x_ /= scalar;
@@ -143,7 +170,7 @@ class vector3 {
     }
     vector3 operator/(float scalar) const {
       if (!scalar)
-        throw divisionbyzero();
+        throw gear2d::evildivision("vector3 vector3::operator/(float scalar) const");
       
       vector3 v;
       v.x_ = x_/scalar;
@@ -197,7 +224,7 @@ class vector3 {
       vector3 me(*this);
       vector3 other(other_);
       if (!me.length() || !other.length())
-        throw divisionbyzero();
+        throw gear2d::evildivision("float vector3::angle(const vector3& other_) const");
       
       return rad2deg(std::acos(dot(other)/(me.length_*other.length_)));
     }
@@ -206,7 +233,7 @@ class vector3 {
     vector3 unitvec() const {
       vector3 me(*this);
       if (!me.length())
-        throw divisionbyzero();
+        throw gear2d::evildivision("vector3 vector3::unitvec() const");
       
       vector3 v;
       v.x_ = x_/me.length_;
@@ -216,7 +243,7 @@ class vector3 {
     }
     void setunitvec() {
       if (!length())
-        throw divisionbyzero();
+        throw gear2d::evildivision("void vector3::setunitvec()");
       
       x_ /= length_;
       y_ /= length_;
@@ -227,7 +254,7 @@ class vector3 {
     vector3 proj(const vector3& other_) const {
       vector3 other(other_);
       if (!other.length())
-        throw divisionbyzero();
+        throw gear2d::evildivision("vector3 vector3::proj(const vector3& other_) const");
       
       vector3 v;
       float scalar = dot(other)/(other.length_*other.length_);
@@ -239,7 +266,7 @@ class vector3 {
     void setproj(const vector3& other_) {
       vector3 other(other_);
       if (!other.length())
-        throw divisionbyzero();
+        throw gear2d::evildivision("void vector3::setproj(const vector3& other_)");
       
       float scalar = dot(other)/(other.length_*other.length_);
       x_ = other.x_*scalar;
@@ -251,7 +278,7 @@ class vector3 {
     vector3 rej(const vector3& other_) const {
       vector3 other(other_);
       if (!other.length())
-        throw divisionbyzero();
+        throw gear2d::evildivision("vector3 vector3::rej(const vector3& other_) const");
       
       vector3 v;
       float scalar = dot(other)/(other.length_*other.length_);
@@ -263,7 +290,7 @@ class vector3 {
     void setrej(const vector3& other_) {
       vector3 other(other_);
       if (!other.length())
-        throw divisionbyzero();
+        throw gear2d::evildivision("void vector3::setrej(const vector3& other_)");
       
       float scalar = dot(other)/(other.length_*other.length_);
       x_ -= other.x_*scalar;
@@ -275,7 +302,7 @@ class vector3 {
     float scalarproj(const vector3& other_) const {
       vector3 other(other_);
       if (!other.length())
-        throw divisionbyzero();
+        throw gear2d::evildivision("float vector3::scalarproj(const vector3& other_) const");
       
       return (x_*other.x_ + y_*other.y_ + z_*other.z_)/other.length_;
     }
@@ -326,29 +353,6 @@ class vector3 {
     void show() {
       std::cout << "vector3 at " << this << ": x = " << x_ << ", y = " << y_;
       std::cout << ", z = " << z_ << ", length = " << length() << std::endl;
-    }
-    
-    // gear2d component communication
-    void write(component::base & com, const std::string & prefix = "") const {
-      std::string my_prefix = prefix;
-      if (prefix.size())
-        my_prefix += ".";
-      com.write<float>(my_prefix + "x", x);
-      com.write<float>(my_prefix + "y", y);
-      com.write<float>(my_prefix + "z", z);
-    }
-    void read(component::base & com, const std::string & prefix = "") const {
-      std::string my_prefix = prefix;
-      if (prefix.size())
-        my_prefix += ".";
-      com.read<float>(my_prefix + "x", x);
-      com.read<float>(my_prefix + "y", y);
-      com.read<float>(my_prefix + "z", z);
-    }
-    static vector3 from(component::base & com, const std::string & prefix = "") {
-      vector3 v;
-      v.read(com, prefix);
-      return v;
     }
 };
 
