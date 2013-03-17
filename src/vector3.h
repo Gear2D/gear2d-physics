@@ -298,24 +298,6 @@ class vector3 {
       z_ = v.z_;
     }
     
-    // other cross this
-    vector3 oppositecross(const vector3& other) const {
-      vector3 v;
-      v.x_ = z_*other.y_ - y_*other.z_;
-      v.y_ = x_*other.z_ - z_*other.x_;
-      v.z_ = y_*other.x_ - x_*other.y_;
-      return v;
-    }
-    void setoppositecross(const vector3& other) {
-      vector3 v;
-      v.x_ = z_*other.y_ - y_*other.z_;
-      v.y_ = x_*other.z_ - z_*other.x_;
-      v.z_ = y_*other.x_ - x_*other.y_;
-      x_ = v.x_;
-      y_ = v.y_;
-      z_ = v.z_;
-    }
-    
     // rotates this around other by angle degrees
     vector3 rotate(float angle, const vector3& other) const {
       vector3 v;
