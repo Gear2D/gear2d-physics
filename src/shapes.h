@@ -8,12 +8,10 @@ using namespace gear2d;
 
 class shape {
   protected:
-    std::string name;
     gear2d::link<float> x, y;
     
   public:
-    shape(component::base* owner, object::signature & sig, const std::string& name)
-    : name(name) {
+    shape(component::base* owner, object::signature & sig, const std::string& name) {
       // init x
       owner->write(name + "x", eval<float>(sig[name + "x"]));
       x = owner->fetch<float>(name + "x");
