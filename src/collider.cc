@@ -40,13 +40,13 @@ class collider : public component::base {
         }
         
         // call shape methods to check collision between them
-        void checkcollision(timediff dt, int frame_timestamp) {
+        void checkcollision(timediff dt, int begin) {
           // avoiding collision interaction check more than once by frame
-          if (update_timestamp == frame_timestamp)
+          if (update_timestamp == begin)
             return;
-          update_timestamp = frame_timestamp;
+          update_timestamp = begin;
           
-          
+          //TODO
         }
     };
     
@@ -97,26 +97,24 @@ class collider : public component::base {
       shapes_changed = true;
     }
     
-    virtual void update(timediff dt) {
-      int frame_timestamp;//TODO retrive "begin" variable from run function of gear2d...
-      
+    virtual void update(timediff dt, int begin) {
       // avoiding collider component update more than once by frame
-      if (update_timestamp == frame_timestamp)
+      if (update_timestamp == begin)
         return;
-      update_timestamp = frame_timestamp;
+      update_timestamp = begin;
       
       // update while new collision interactions were created inside the global update loop
       shapes_changed = true;
       while (shapes_changed) {
         shapes_changed = false;
-        globalupdate(dt, frame_timestamp);
+        globalupdate(dt, begin);
       }
     }
     
     // check all collision interactions
-    void globalupdate(timediff dt, int frame_timestamp) {
+    void globalupdate(timediff dt, int begin) {
       for (set<interaction>::iterator it = interactions.begin(); it != interactions.end(); ++it)
-        ((interaction&)*it).checkcollision(dt, frame_timestamp);
+        ((interaction&)*it).checkcollision(dt, begin);
     }
 };
 
