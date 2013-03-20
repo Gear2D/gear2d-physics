@@ -9,6 +9,7 @@ using namespace std;
 
 class collider : public component::base {
   private:
+    // container to hold a pair of collision check
     struct interaction {
       public:
         int update_timestamp;
