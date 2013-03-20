@@ -9,44 +9,25 @@ using namespace std;
 
 class collider : public component::base {
   private:
-    class interaction {
-      private:
-        int update_timestamp;
-        
+    struct interaction {
       public:
-        collider* com1;
-        string shape1;
+        int update_timestamp;
+        shape* shape1;
+        shape* shape2;
         
-        collider* com2;
-        string shape2;
-        
-        interaction() : update_timestamp(-1) {}
+        interaction(shape* shape1, shape* shape2)
+        : update_timestamp(-1), shape1(shape1), shape2(shape2) {}
         
         // operator implemented for the set template class comparison
         bool operator<(const interaction& other) const {
-          // an interaction is equal to another if both have the same shapes
-          if (((com1 == other.com1 && shape1 == other.shape1) &&
-               (com2 == other.com2 && shape2 == other.shape2)) ||
-              ((com1 == other.com2 && shape1 == other.shape2) &&
-               (com2 == other.com1 && shape2 == other.shape1)))
-            return false;
-          
-          // interactions between a shape and itself shouldn't be stored
-          if ((com1       == com2       && shape1       == shape2      ) ||
-              (other.com1 == other.com2 && other.shape1 == other.shape2))
+          // an interaction is equal to another if both have the same shapes.
+          // interactions between a shape and itself shouldn't be stored.
+          if ((shape1 == other.shape1 && shape2 == other.shape2) ||
+              (shape1 == other.shape2 && shape2 == other.shape1) ||
+              (shape1 == shape2 || other.shape1 == other.shape2))
             return false;
           
           return true;
-        }
-        
-        // call shape methods to check collision between them
-        void checkcollision(timediff dt, int begin) {
-          // avoiding collision interaction check more than once by frame
-          if (update_timestamp == begin)
-            return;
-          update_timestamp = begin;
-          
-          //TODO
         }
     };
     
@@ -113,8 +94,16 @@ class collider : public component::base {
     
     // check all collision interactions
     void globalupdate(timediff dt, int begin) {
-      for (set<interaction>::iterator it = interactions.begin(); it != interactions.end(); ++it)
-        ((interaction&)*it).checkcollision(dt, begin);
+      for (set<interaction>::iterator it = interactions.begin(); it != interactions.end(); ++it) {
+        interaction& tmp = (interaction&)*it;
+        
+        // avoiding collision interaction check more than once by frame
+        if (tmp.update_timestamp == begin)
+          continue;
+        tmp.update_timestamp = begin;
+        
+        
+      }
     }
 };
 
