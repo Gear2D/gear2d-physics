@@ -12,47 +12,60 @@ class collider : public component::base {
     // container to hold a pair of collision check
     struct interaction {
       public:
+        static bool interactions_changed;
+        
         int update_timestamp;
         shape* shape1;
         shape* shape2;
         
         interaction(shape* shape1, shape* shape2)
-        : update_timestamp(-1), shape1(shape1), shape2(shape2) {}
+        : update_timestamp(-1), shape1(shape1), shape2(shape2)
+        {
+          interactions_changed = true;
+        }
         
         // operator implemented for the set template class comparison
         bool operator<(const interaction& other) const {
-          // an interaction is equal to another if both have the same shapes.
-          // interactions between a shape and itself shouldn't be stored.
-          if ((shape1 == other.shape1 && shape2 == other.shape2) ||
-              (shape1 == other.shape2 && shape2 == other.shape1) ||
-              (shape1 == shape2 || other.shape1 == other.shape2))
-            return false;
+          // an interaction is equal to another if both have the same shapes
+          return (!((shape1 == other.shape1 && shape2 == other.shape2) ||
+                    (shape1 == other.shape2 && shape2 == other.shape1)));
+        }
+        
+        // checks collision between the pair of shapes
+        void checkcollision(timediff dt) {
+          bool collides = shape1->checkcollision(dt, shape2);
           
-          return true;
+          // triggers the collision event
+          
         }
     };
     
-    static map< collider*, map<string, shape*> > shapes;
+    static set<collider*> colliders;
     static set<interaction> interactions;
     static int update_timestamp;
-    static bool shapes_changed;
+    
+    set<shape*> shapes;
     
   public:
     // constructor and destructor
-    collider() {}
+    collider() {
+      colliders.insert(this);
+    }
     ~collider() {
-      while (shapes[this].size()) {
-        delete shapes[this].begin()->second;
-        shapes[this].erase(shapes[this].begin());
+      // frees all collider shapes
+      while (shapes.size()) {
+        freeshape(*shapes.begin());
+        shapes.erase(shapes.begin());
       }
-      shapes.erase(this);
+      
+      colliders.erase(this);
     }
     
     virtual gear2d::component::family family() { return "collider"; }
     
     virtual gear2d::component::type type() { return "collider"; }
     
-    virtual std::string depends() { return "spatial/space2d"; }
+    virtual std::string depends() { return "kinematics/kinematic2d"; }
     
     // setup phase, to initialize paramters and other stuff
     virtual void setup(object::signature & sig) {
@@ -65,32 +78,42 @@ class collider : public component::base {
       }
     }
     
+    // looks for a shape type and calls the correct constructor
     void loadshape(object::signature & sig, const string& shape_name) {
-      string full_name = "collider." + shape_name + ".";
-      string type = sig[full_name + "type"];
+      string type = sig["collider." + shape_name + ".type"];
       
       if (type == "rectangle")
-        shapes[this][shape_name] = new rectangle(this, sig, full_name);
+        shapes.insert(new rectangle(this, sig, shape_name));
       else if (type == "circle")
-        shapes[this][shape_name] = new circle(this, sig, full_name);
+        shapes.insert(new circle(this, sig, shape_name));
       else
         throw evil("Unknown geometrical shape type creation inside collider component");
-      
-      shapes_changed = true;
     }
     
+    // frees all interactions related to a shape and the shape itself
+    void freeshape(shape* sh) {
+      set<interaction>::iterator it = interactions.begin(), ittmp;
+      while (it != interactions.end()) {
+        ittmp = it;
+        ++it;
+        if (ittmp->shape1 == sh || ittmp->shape2 == sh)
+          interactions.erase(ittmp);
+      }
+      delete sh;
+    }
+    
+    // runs the big loop to check collision between alls pairs of interaction
     virtual void update(timediff dt, int begin) {
       // avoiding collider component update more than once by frame
       if (update_timestamp == begin)
         return;
       update_timestamp = begin;
       
-      // update while new collision interactions were created inside the global update loop
-      shapes_changed = true;
-      while (shapes_changed) {
-        shapes_changed = false;
+      // globalupdate function is called until it doesn't create any interaction
+      do {
+        interaction::interactions_changed = false;
         globalupdate(dt, begin);
-      }
+      } while (interaction::interactions_changed);
     }
     
     // check all collision interactions
@@ -103,16 +126,19 @@ class collider : public component::base {
           continue;
         tmp.update_timestamp = begin;
         
-        
+        // checks collision
+        tmp.checkcollision(dt);
       }
     }
 };
 
 // static vars
-map< collider*, map<string, shape*> > collider::shapes;
+
+bool collider::interaction::interactions_changed = false;
+
+set<collider*> collider::colliders;
 set<collider::interaction> collider::interactions;
 int collider::update_timestamp = -1;
-bool collider::shapes_changed;
 
 // the build function
 g2dcomponent(collider)
