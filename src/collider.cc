@@ -1,7 +1,6 @@
 #include <iostream>
 #include "gear2d.h"
 
-#include "vector3.h"
 #include "shapes.h"
 
 using namespace gear2d;

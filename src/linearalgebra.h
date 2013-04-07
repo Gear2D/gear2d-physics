@@ -1,6 +1,6 @@
 
-#ifndef VECTOR3_H
-#define VECTOR3_H
+#ifndef LINEARALGEBRA_H
+#define LINEARALGEBRA_H
 
 #include <cmath>
 #include <iostream>
@@ -355,5 +355,59 @@ class vector3 {
       std::cout << ", z = " << z_ << ", length = " << length() << std::endl;
     }
 };
+
+float determinant2(const vector3& a, const vector3& b) {
+  return a.x()*b.y() - a.y()*b.x();
+}
+
+float determinant3(const vector3& a, const vector3& b, const vector3& c) {
+  return
+      a.x()*b.y()*c.z() + b.x()*c.y()*a.z() + c.x()*a.y()*b.z()
+    - a.z()*b.y()*c.x() - b.z()*c.y()*a.x() - c.z()*a.y()*b.x()
+  ;
+}
+
+bool linearsystem2(
+  const vector3& a, const vector3& b, const vector3& c,
+  float& x, float& y
+) {
+  float D = determinant2(a, b);
+  if (!D) {
+    x = 0;
+    y = 0;
+    return false;
+  }
+  
+  float Dx = determinant2(c, b);
+  float Dy = determinant2(a, c);
+  
+  x = Dx/D;
+  y = Dy/D;
+  
+  return true;
+}
+
+bool linearsystem3(
+  const vector3& a, const vector3& b, const vector3& c, const vector3& d,
+  float& x, float& y, float& z
+) {
+  float D = determinant3(a, b, c);
+  if (!D) {
+    x = 0;
+    y = 0;
+    z = 0;
+    return false;
+  }
+  
+  float Dx = determinant3(d, b, c);
+  float Dy = determinant3(a, d, c);
+  float Dz = determinant3(a, b, d);
+  
+  x = Dx/D;
+  y = Dy/D;
+  z = Dz/D;
+  
+  return true;
+}
 
 #endif
