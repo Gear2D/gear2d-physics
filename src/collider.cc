@@ -79,14 +79,21 @@ class collider : public component::base {
     
     // looks for a shape type and calls the correct constructor
     void loadshape(object::signature & sig, const string& shape_name) {
+      moderr("collider");
+      
       string type = sig["collider." + shape_name + ".type"];
       
-      if (type == "rectangle")
-        shapes.insert(new rectangle(this, sig, shape_name));
-      else if (type == "circle")
-        shapes.insert(new circle(this, sig, shape_name));
-      else
-        throw evil("Unknown geometrical shape type creation inside collider component");
+      try {
+        if (type == "rectangle")
+          shapes.insert(new rectangle(this, sig, shape_name));
+        else if (type == "circle")
+          shapes.insert(new circle(this, sig, shape_name));
+        else
+          trace("Unknown geometrical shape type creation inside collider component");
+      }
+      catch (evil& e) {
+        trace(e.what());
+      }
     }
     
     // frees all interactions related to a shape and the shape itself

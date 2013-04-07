@@ -11,7 +11,7 @@ using namespace gear2d;
 // every new shape class implementation must add lines in the
 // marked points of this file.
 
-// MARK ONE: declaration of all shapes
+// CLASS LISTING MARK
 class rectangle;
 class circle;
 
@@ -67,7 +67,7 @@ class shape {
       string other_type = other->type();
       checkcallback ccb;
       
-      // MARK TWO: routing function
+      // FUNCTION ROUTING MARK
       if (other_type == "rectangle")
         ccb = (checkcallback)&shape::collidesrectangle;
       else if (other_type == "circle")
@@ -85,11 +85,13 @@ class shape {
     }
     
   private:
-    // MARK THREE: abstract functions
+    // ABSTRACT FUNCTIONS MARK
     virtual string type() const = 0;
     virtual bool collidesrectangle(rectangle*, const vector3&, const vector3&) = 0;
     virtual bool collidescircle(circle*, const vector3&, const vector3&) = 0;
 };
+
+// CLASS DECLARATION MARK
 
 class rectangle : public shape {
   private:
@@ -103,35 +105,14 @@ class rectangle : public shape {
     // FRIENDSHIP MARK
     friend class circle;
     
-    rectangle(component::base* owner, object::signature & sig, const string& name)
-    : shape(owner, sig, name) {
-      // init w
-      owner->write(this->name + "w", eval<float>(sig[this->name + "w"]));
-      w = owner->fetch<float>(this->name + "w");
-      
-      // init h
-      owner->write(this->name + "h", eval<float>(sig[this->name + "h"]));
-      h = owner->fetch<float>(this->name + "h");
-      
-      if (!w || !h)
-        throw evil("Trying to create rectangle without width and/or height inside rectangle shape class");
-    }
+    rectangle(component::base* owner, object::signature & sig, const string& name);
     
   private:
-    string type() const { return "rectangle"; }
+    string type() const;
     
-    // IMPLEMENTATION MARK: abstract functions implementation
-    bool collidesrectangle(rectangle* other, const vector3& this_pos, const vector3& other_pos) {
-      return (
-         this_pos.x() <= other_pos.x() + other->w &&
-        other_pos.x() <=  this_pos.x() +        w &&
-         this_pos.y() <= other_pos.y() + other->h &&
-        other_pos.y() <=  this_pos.y() +        h
-      );
-    }
-    bool collidescircle(circle* other, const vector3& this_pos, const vector3& other_pos) {
-      return false;
-    }
+    // ABSTRACT FUNCTIONS MARK
+    bool collidesrectangle(rectangle* other, const vector3& this_pos, const vector3& other_pos);
+    bool collidescircle(circle* other, const vector3& this_pos, const vector3& other_pos);
 };
 
 class circle : public shape {
@@ -145,26 +126,133 @@ class circle : public shape {
     // FRIENDSHIP MARK
     friend class rectangle;
     
-    circle(component::base* owner, object::signature & sig, const string& name)
-    : shape(owner, sig, name) {
-      // init r
-      owner->write(this->name + "r", eval<float>(sig[this->name + "r"]));
-      r = owner->fetch<float>(this->name + "r");
-      
-      if (!r)
-        throw evil("Trying to create circle without radius inside circle shape class");
-    }
+    circle(component::base* owner, object::signature & sig, const string& name);
+    
+  public:
+    static bool linesegcollision(const vector3& v0, const vector3& v, const vector3& center, float radius);
     
   private:
-    string type() const { return "circle"; }
+    string type() const;
     
-    // IMPLEMENTATION MARK: abstract functions implementation
-    bool collidesrectangle(rectangle* other, const vector3& this_pos, const vector3& other_pos) {
-      return false;
-    }
-    bool collidescircle(circle* other, const vector3& this_pos, const vector3& other_pos) {
-      return ((this_pos - other_pos).length() <= r + other->r);
-    }
+    // ABSTRACT FUNCTIONS MARK
+    bool collidesrectangle(rectangle* other, const vector3& this_pos, const vector3& other_pos);
+    bool collidescircle(circle* other, const vector3& this_pos, const vector3& other_pos);
 };
+
+// =============================================================================
+// rectangle class implementation
+// =============================================================================
+
+rectangle::rectangle(component::base* owner, object::signature & sig, const string& name)
+: shape(owner, sig, name) {
+  // init w
+  owner->write(this->name + "w", eval<float>(sig[this->name + "w"]));
+  w = owner->fetch<float>(this->name + "w");
+  
+  // init h
+  owner->write(this->name + "h", eval<float>(sig[this->name + "h"]));
+  h = owner->fetch<float>(this->name + "h");
+  
+  if (w <= 0 || h <= 0)
+    throw evil("Trying to create rectangle without width and/or height inside rectangle shape class");
+}
+
+string rectangle::type() const { return "rectangle"; }
+
+// RECTANGLE ABSTRACT FUNCTIONS IMPLEMENTATION MARK
+
+bool rectangle::collidesrectangle(rectangle* other, const vector3& this_pos, const vector3& other_pos) {
+  // De Morgan of:
+  // first rect totally right the second rect OR
+  // second rect totally right the first rect OR
+  // first rect totally below the second rect OR
+  // second rect totally below the first rect
+  return (
+     this_pos.x() <= other_pos.x() + other->w &&
+    other_pos.x() <=  this_pos.x() +        w &&
+     this_pos.y() <= other_pos.y() + other->h &&
+    other_pos.y() <=  this_pos.y() +        h
+  );
+}
+
+bool rectangle::collidescircle(circle* other, const vector3& this_pos, const vector3& other_pos) {
+  // other_pos represents the center of the circle. this condition checks
+  // if this point is inside the rectangle, which means that
+  // collision happens.
+  if (
+    other_pos.x() >= this_pos.x() && other_pos.x() < this_pos.x() + w &&
+    other_pos.y() >= this_pos.y() && other_pos.y() < this_pos.y() + h
+  )
+    return true;
+  
+  // collision happens if any line segment of the rectangle collides with
+  // the circle.
+  vector3 horizontal = vector3(w, 0);
+  vector3 vertical = vector3(0, h);
+  vector3 upper_left = this_pos;
+  vector3 upper_right = this_pos + horizontal;
+  vector3 lower_left = this_pos + vertical;
+  return (
+    circle::linesegcollision(upper_left, horizontal, other_pos, other->r) ||
+    circle::linesegcollision(upper_left, vertical, other_pos, other->r) ||
+    circle::linesegcollision(upper_right, vertical, other_pos, other->r) ||
+    circle::linesegcollision(lower_left, horizontal, other_pos, other->r)
+  );
+}
+
+// =============================================================================
+// circle class implementation
+// =============================================================================
+
+circle::circle(component::base* owner, object::signature & sig, const string& name)
+: shape(owner, sig, name) {
+  // init r
+  owner->write(this->name + "r", eval<float>(sig[this->name + "r"]));
+  r = owner->fetch<float>(this->name + "r");
+  
+  if (r <= 0)
+    throw evil("Trying to create circle without radius inside circle shape class");
+}
+
+bool circle::linesegcollision(const vector3& v0, const vector3& v, const vector3& center, float radius) {
+  // collision happens if the shortest distance between the center and the
+  // line segment is less or equal to the radius
+  vector3 range = center - v0;
+  return ((range - range.proj(v)).length() <= radius);
+}
+
+string circle::type() const { return "circle"; }
+
+// CIRCLE ABSTRACT FUNCTIONS IMPLEMENTATION MARK
+
+bool circle::collidesrectangle(rectangle* other, const vector3& this_pos, const vector3& other_pos) {
+  // this_pos represents the center of the circle. this condition checks
+  // if this point is inside the rectangle, which means that
+  // collision happens.
+  if (
+    this_pos.x() >= other_pos.x() && this_pos.x() < other_pos.x() + other->w &&
+    this_pos.y() >= other_pos.y() && this_pos.y() < other_pos.y() + other->h
+  )
+    return true;
+  
+  // collision happens if any line segment of the rectangle collides with
+  // the circle.
+  vector3 horizontal = vector3(other->w, 0);
+  vector3 vertical = vector3(0, other->h);
+  vector3 upper_left = other_pos;
+  vector3 upper_right = other_pos + horizontal;
+  vector3 lower_left = other_pos + vertical;
+  return (
+    circle::linesegcollision(upper_left, horizontal, this_pos, r) ||
+    circle::linesegcollision(upper_left, vertical, this_pos, r) ||
+    circle::linesegcollision(upper_right, vertical, this_pos, r) ||
+    circle::linesegcollision(lower_left, horizontal, this_pos, r)
+  );
+}
+
+bool circle::collidescircle(circle* other, const vector3& this_pos, const vector3& other_pos) {
+  // collision happens if distance center-to-center is less or equal than the sum of the radii
+  return ((this_pos - other_pos).length() <= r + other->r);
+}
 
 #endif
