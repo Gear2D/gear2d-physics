@@ -193,25 +193,17 @@ class vector3 {
     bool operator!=(const vector3& other) const {
       return (x_ != other.x_ || y_ != other.y_ || z_ != other.z_);
     }
-    bool operator>(const vector3& other_) const {
-      vector3 me(*this);
-      vector3 other(other_);
-      return (me.length() > other.length());
+    bool operator>(const vector3& other) const {
+      return (((vector3&)*this).length() > ((vector3&)other).length());
     }
-    bool operator<(const vector3& other_) const {
-      vector3 me(*this);
-      vector3 other(other_);
-      return (me.length() < other.length());
+    bool operator<(const vector3& other) const {
+      return (((vector3&)*this).length() < ((vector3&)other).length());
     }
-    bool operator>=(const vector3& other_) const {
-      vector3 me(*this);
-      vector3 other(other_);
-      return (me.length() >= other.length());
+    bool operator>=(const vector3& other) const {
+      return (((vector3&)*this).length() >= ((vector3&)other).length());
     }
-    bool operator<=(const vector3& other_) const {
-      vector3 me(*this);
-      vector3 other(other_);
-      return (me.length() <= other.length());
+    bool operator<=(const vector3& other) const {
+      return (((vector3&)*this).length() <= ((vector3&)other).length());
     }
     
     // this dot other
@@ -220,25 +212,22 @@ class vector3 {
     }
     
     // angle in degrees between this and other
-    float angle(const vector3& other_) const {
-      vector3 me(*this);
-      vector3 other(other_);
-      if (!me.length() || !other.length())
-        throw gear2d::evildivision("float vector3::angle(const vector3& other_) const");
+    float angle(const vector3& other) const {
+      if (!((vector3&)*this).length() || !((vector3&)other).length())
+        throw gear2d::evildivision("float vector3::angle(const vector3& other) const");
       
-      return rad2deg(std::acos(dot(other)/(me.length_*other.length_)));
+      return rad2deg(std::acos(dot(other)/(this->length_*other.length_)));
     }
     
     // this unit vector
     vector3 unitvec() const {
-      vector3 me(*this);
-      if (!me.length())
+      if (!((vector3&)*this).length())
         throw gear2d::evildivision("vector3 vector3::unitvec() const");
       
       vector3 v;
-      v.x_ = x_/me.length_;
-      v.y_ = y_/me.length_;
-      v.z_ = z_/me.length_;
+      v.x_ = x_/this->length_;
+      v.y_ = y_/this->length_;
+      v.z_ = z_/this->length_;
       return v;
     }
     void setunitvec() {
@@ -251,10 +240,9 @@ class vector3 {
     }
     
     // this projection over other
-    vector3 proj(const vector3& other_) const {
-      vector3 other(other_);
-      if (!other.length())
-        throw gear2d::evildivision("vector3 vector3::proj(const vector3& other_) const");
+    vector3 proj(const vector3& other) const {
+      if (!((vector3&)other).length())
+        throw gear2d::evildivision("vector3 vector3::proj(const vector3& other) const");
       
       vector3 v;
       float scalar = dot(other)/(other.length_*other.length_);
@@ -263,10 +251,9 @@ class vector3 {
       v.z_ = other.z_*scalar;
       return v;
     }
-    void setproj(const vector3& other_) {
-      vector3 other(other_);
-      if (!other.length())
-        throw gear2d::evildivision("void vector3::setproj(const vector3& other_)");
+    void setproj(const vector3& other) {
+      if (!((vector3&)other).length())
+        throw gear2d::evildivision("void vector3::setproj(const vector3& other)");
       
       float scalar = dot(other)/(other.length_*other.length_);
       x_ = other.x_*scalar;
@@ -275,10 +262,9 @@ class vector3 {
     }
     
     // this rejection over other
-    vector3 rej(const vector3& other_) const {
-      vector3 other(other_);
-      if (!other.length())
-        throw gear2d::evildivision("vector3 vector3::rej(const vector3& other_) const");
+    vector3 rej(const vector3& other) const {
+      if (!((vector3&)other).length())
+        throw gear2d::evildivision("vector3 vector3::rej(const vector3& other) const");
       
       vector3 v;
       float scalar = dot(other)/(other.length_*other.length_);
@@ -287,10 +273,9 @@ class vector3 {
       v.z_ = z_ - other.z_*scalar;
       return v;
     }
-    void setrej(const vector3& other_) {
-      vector3 other(other_);
-      if (!other.length())
-        throw gear2d::evildivision("void vector3::setrej(const vector3& other_)");
+    void setrej(const vector3& other) {
+      if (!((vector3&)other).length())
+        throw gear2d::evildivision("void vector3::setrej(const vector3& other)");
       
       float scalar = dot(other)/(other.length_*other.length_);
       x_ -= other.x_*scalar;
@@ -299,10 +284,9 @@ class vector3 {
     }
     
     // this scalar projection over other
-    float scalarproj(const vector3& other_) const {
-      vector3 other(other_);
-      if (!other.length())
-        throw gear2d::evildivision("float vector3::scalarproj(const vector3& other_) const");
+    float scalarproj(const vector3& other) const {
+      if (!((vector3&)other).length())
+        throw gear2d::evildivision("float vector3::scalarproj(const vector3& other) const");
       
       return (x_*other.x_ + y_*other.y_ + z_*other.z_)/other.length_;
     }
@@ -356,11 +340,11 @@ class vector3 {
     }
 };
 
-float determinant2(const vector3& a, const vector3& b) {
+float det2(const vector3& a, const vector3& b) {
   return a.x()*b.y() - a.y()*b.x();
 }
 
-float determinant3(const vector3& a, const vector3& b, const vector3& c) {
+float det3(const vector3& a, const vector3& b, const vector3& c) {
   return
       a.x()*b.y()*c.z() + b.x()*c.y()*a.z() + c.x()*a.y()*b.z()
     - a.z()*b.y()*c.x() - b.z()*c.y()*a.x() - c.z()*a.y()*b.x()
@@ -371,15 +355,15 @@ bool linearsystem2(
   const vector3& a, const vector3& b, const vector3& c,
   float& x, float& y
 ) {
-  float D = determinant2(a, b);
+  float D = det2(a, b);
   if (!D) {
     x = 0;
     y = 0;
     return false;
   }
   
-  float Dx = determinant2(c, b);
-  float Dy = determinant2(a, c);
+  float Dx = det2(c, b);
+  float Dy = det2(a, c);
   
   x = Dx/D;
   y = Dy/D;
@@ -391,7 +375,7 @@ bool linearsystem3(
   const vector3& a, const vector3& b, const vector3& c, const vector3& d,
   float& x, float& y, float& z
 ) {
-  float D = determinant3(a, b, c);
+  float D = det3(a, b, c);
   if (!D) {
     x = 0;
     y = 0;
@@ -399,9 +383,9 @@ bool linearsystem3(
     return false;
   }
   
-  float Dx = determinant3(d, b, c);
-  float Dy = determinant3(a, d, c);
-  float Dz = determinant3(a, b, d);
+  float Dx = det3(d, b, c);
+  float Dy = det3(a, d, c);
+  float Dz = det3(a, b, d);
   
   x = Dx/D;
   y = Dy/D;

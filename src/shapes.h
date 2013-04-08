@@ -215,10 +215,28 @@ circle::circle(component::base* owner, object::signature & sig, const string& na
 }
 
 bool circle::linesegcollision(const vector3& v0, const vector3& v, const vector3& center, float radius) {
-  // collision happens if the shortest distance between the center and the
+  // point of the line segment closest to the center of the circle
+  vector3 closest;
+  
+  // the scalar projection of the position vector of the circle, relative to
+  // the begining of the line segment, over the line segment
+  float scalar_proj = (center - v0).scalarproj(v);
+  
+  // in this case, the closest point is the begining of the line segment
+  if (scalar_proj < 0)
+    closest = v0;
+  // in this case, the closest point is the end of the line segment
+  else if (scalar_proj > ((vector3&)v).length())
+    closest = v0 + v;
+  // in this case, the closest point is the begining of the line segment plus
+  // the projection of the position vector of the circle, relative to the
+  // begining of the line segment, over the line segment
+  else
+    closest = v0 + v.unitvec()*scalar_proj;
+  
+  // intersection happens if the shortest distance between the center and the
   // line segment is less or equal to the radius
-  vector3 range = center - v0;
-  return ((range - range.proj(v)).length() <= radius);
+  return ((center - closest).length() <= radius);
 }
 
 string circle::type() const { return "circle"; }
