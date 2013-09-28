@@ -1,0 +1,9 @@
+
+proteger parametros geometricos na hora da escritura
+
+interface para attachar e dettachar interacoes atraves de hooks de componentes
+interface (como disparar o evento de colisao). em quais objetos e shapes e parametros os componentes irao se hookar para responderem a colisoes?
+criar os attachs naturais de pares de colisao (atraves das assinaturas)
+interface para criar e destruir shapes
+
+já temos nosso primeiro parametro global =D. const int interpolation_steps;
